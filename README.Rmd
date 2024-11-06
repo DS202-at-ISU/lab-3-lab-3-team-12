@@ -36,7 +36,42 @@ Similarly, deal with the returns of characters.
 Based on these datasets calculate the average number of deaths an Avenger suffers. 
 
 ## Individually
+```{R}
+library(tidyverse)
 
+
+# Pivot the Death columns into a long format
+deaths <- av %>%
+  pivot_longer(cols = starts_with("Death"),
+               names_to = "Time",
+               values_to = "Death") %>%
+  mutate(Time = parse_number(Time),
+         Death = ifelse(Death == "YES", "yes", ifelse(Death == "NO", "no", "")))
+
+# Preview the transformed dataset
+head(deaths)
+
+# Pivot the Return columns into a long format similarly
+returns <- av %>%
+  pivot_longer(cols = starts_with("Return"),
+               names_to = "Time",
+               values_to = "Return") %>%
+  mutate(Time = parse_number(Time),
+         Return = ifelse(Return == "YES", "yes", ifelse(Return == "NO", "no", "")))
+
+# Preview the transformed dataset
+head(returns)
+
+# Calculate the average number of deaths
+average_deaths <- deaths %>%
+  filter(Death == "yes") %>%
+  group_by(Name.Alias) %>%
+  summarise(num_deaths = n()) %>%
+  summarise(avg_deaths = mean(num_deaths))
+
+average_deaths
+
+```
 For each team member, copy this part of the report. 
 
 Each team member picks one of the statements in the FiveThirtyEight [analysis](https://fivethirtyeight.com/features/avengers-death-comics-age-of-ultron/) and fact checks it based on the data. Use dplyr functionality whenever possible.
@@ -44,6 +79,27 @@ Each team member picks one of the statements in the FiveThirtyEight [analysis](h
 ### FiveThirtyEight Statement
 
 > Quote the statement you are planning to fact-check.
+
+### Keegan Moerke Statement:
+
+>I counted 89 total deaths — some unlucky Avengers7 are basically Meat Loaf with an E-ZPass — and on 57 occasions the individual made a comeback.
+
+```{R}
+library(dplyr)
+
+# Calculate the total number of deaths
+total_deaths <- deaths %>%
+  filter(Death == "yes") %>%
+  summarise(total_deaths = n())
+
+# Calculate the total number of comebacks
+total_comebacks <- returns %>%
+  filter(Return == "yes") %>%
+  summarise(total_comebacks = n())
+
+total_deaths
+total_comebacks
+```
 
 ### Include the code
 

@@ -78,6 +78,91 @@ Avenger suffers.
 
 ## Individually
 
+``` r
+library(tidyverse)
+```
+
+    ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+    ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
+    ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
+    ## ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
+    ## ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+    ## ✔ purrr     1.0.2     
+    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ✖ dplyr::filter() masks stats::filter()
+    ## ✖ dplyr::lag()    masks stats::lag()
+    ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+
+``` r
+# Pivot the Death columns into a long format
+deaths <- av %>%
+  pivot_longer(cols = starts_with("Death"),
+               names_to = "Time",
+               values_to = "Death") %>%
+  mutate(Time = parse_number(Time),
+         Death = ifelse(Death == "YES", "yes", ifelse(Death == "NO", "no", "")))
+
+# Preview the transformed dataset
+head(deaths)
+```
+
+    ## # A tibble: 6 × 18
+    ##   URL                 Name.Alias Appearances Current. Gender Probationary.Introl
+    ##   <chr>               <chr>            <int> <chr>    <chr>  <chr>              
+    ## 1 http://marvel.wiki… "Henry Jo…        1269 YES      MALE   ""                 
+    ## 2 http://marvel.wiki… "Henry Jo…        1269 YES      MALE   ""                 
+    ## 3 http://marvel.wiki… "Henry Jo…        1269 YES      MALE   ""                 
+    ## 4 http://marvel.wiki… "Henry Jo…        1269 YES      MALE   ""                 
+    ## 5 http://marvel.wiki… "Henry Jo…        1269 YES      MALE   ""                 
+    ## 6 http://marvel.wiki… "Janet va…        1165 YES      FEMALE ""                 
+    ## # ℹ 12 more variables: Full.Reserve.Avengers.Intro <chr>, Year <int>,
+    ## #   Years.since.joining <int>, Honorary <chr>, Return1 <chr>, Return2 <chr>,
+    ## #   Return3 <chr>, Return4 <chr>, Return5 <chr>, Notes <chr>, Time <dbl>,
+    ## #   Death <chr>
+
+``` r
+# Pivot the Return columns into a long format similarly
+returns <- av %>%
+  pivot_longer(cols = starts_with("Return"),
+               names_to = "Time",
+               values_to = "Return") %>%
+  mutate(Time = parse_number(Time),
+         Return = ifelse(Return == "YES", "yes", ifelse(Return == "NO", "no", "")))
+
+# Preview the transformed dataset
+head(returns)
+```
+
+    ## # A tibble: 6 × 18
+    ##   URL                 Name.Alias Appearances Current. Gender Probationary.Introl
+    ##   <chr>               <chr>            <int> <chr>    <chr>  <chr>              
+    ## 1 http://marvel.wiki… "Henry Jo…        1269 YES      MALE   ""                 
+    ## 2 http://marvel.wiki… "Henry Jo…        1269 YES      MALE   ""                 
+    ## 3 http://marvel.wiki… "Henry Jo…        1269 YES      MALE   ""                 
+    ## 4 http://marvel.wiki… "Henry Jo…        1269 YES      MALE   ""                 
+    ## 5 http://marvel.wiki… "Henry Jo…        1269 YES      MALE   ""                 
+    ## 6 http://marvel.wiki… "Janet va…        1165 YES      FEMALE ""                 
+    ## # ℹ 12 more variables: Full.Reserve.Avengers.Intro <chr>, Year <int>,
+    ## #   Years.since.joining <int>, Honorary <chr>, Death1 <chr>, Death2 <chr>,
+    ## #   Death3 <chr>, Death4 <chr>, Death5 <chr>, Notes <chr>, Time <dbl>,
+    ## #   Return <chr>
+
+``` r
+# Calculate the average number of deaths
+average_deaths <- deaths %>%
+  filter(Death == "yes") %>%
+  group_by(Name.Alias) %>%
+  summarise(num_deaths = n()) %>%
+  summarise(avg_deaths = mean(num_deaths))
+
+average_deaths
+```
+
+    ## # A tibble: 1 × 1
+    ##   avg_deaths
+    ##        <dbl>
+    ## 1       1.39
+
 For each team member, copy this part of the report.
 
 Each team member picks one of the statements in the FiveThirtyEight
@@ -88,6 +173,42 @@ possible.
 ### FiveThirtyEight Statement
 
 > Quote the statement you are planning to fact-check.
+
+### Keegan Moerke Statement:
+
+> I counted 89 total deaths — some unlucky Avengers7 are basically Meat
+> Loaf with an E-ZPass — and on 57 occasions the individual made a
+> comeback.
+
+``` r
+library(dplyr)
+
+# Calculate the total number of deaths
+total_deaths <- deaths %>%
+  filter(Death == "yes") %>%
+  summarise(total_deaths = n())
+
+# Calculate the total number of comebacks
+total_comebacks <- returns %>%
+  filter(Return == "yes") %>%
+  summarise(total_comebacks = n())
+
+total_deaths
+```
+
+    ## # A tibble: 1 × 1
+    ##   total_deaths
+    ##          <int>
+    ## 1           89
+
+``` r
+total_comebacks
+```
+
+    ## # A tibble: 1 × 1
+    ##   total_comebacks
+    ##             <int>
+    ## 1              57
 
 ### Include the code
 
