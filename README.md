@@ -176,7 +176,7 @@ possible.
 
 ### Keegan Moerke Statement:
 
-> I counted 89 total deaths — some unlucky Avengers7 are basically Meat
+> I counted 89 total deaths — some unlucky Avengers are basically Meat
 > Loaf with an E-ZPass — and on 57 occasions the individual made a
 > comeback.
 
@@ -209,6 +209,43 @@ total_comebacks
     ##   total_comebacks
     ##             <int>
     ## 1              57
+
+Here, the total deaths confirms that there were indeed 89 total deaths
+and 57 comebacks. This was done by filtering out deaths = “yes” and
+return = “yes”.
+
+### Umesh Sai Teja Poola Statement:
+
+> One unlucky Avenger, Wolverine, has died more times than any other
+> member.
+
+This statement suggests that Wolverine has the highest number of
+recorded deaths among Avengers. To validate this, let’s determine the
+character with the maximum number of deaths in the deaths dataset.
+
+``` r
+# Find the character with the maximum number of deaths
+most_deaths <- deaths %>%
+  filter(Death == "yes") %>%
+  group_by(Name.Alias) %>%
+  summarise(num_deaths = n()) %>%
+  arrange(desc(num_deaths)) %>%
+  slice(1)
+
+most_deaths
+```
+
+    ## # A tibble: 1 × 2
+    ##   Name.Alias num_deaths
+    ##   <chr>           <int>
+    ## 1 ""                  7
+
+### Answer
+
+This code identifies the Avenger with the most recorded deaths,
+confirming or refuting the statement. If Wolverine is indeed at the top,
+the statement holds; otherwise, we will know which Avenger experienced
+the most deaths.
 
 ### Include the code
 
