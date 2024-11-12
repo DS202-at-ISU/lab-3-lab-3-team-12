@@ -180,6 +180,27 @@ possible.
 > Loaf with an E-ZPass — and on 57 occasions the individual made a
 > comeback.
 
+Grant Springman:
+
+``` r
+death_columns <- paste0("Death", 1:5)
+deaths <- av %>%
+  select(Name.Alias, all_of(death_columns)) %>%
+  pivot_longer(cols = starts_with("Death"), names_to = "Time", values_to = "Death") %>%
+  mutate(Time = parse_number(Time))
+
+deaths_only <- deaths %>% filter(Death == "YES")
+average_deaths <- deaths_only %>%
+  group_by(Name.Alias) %>%
+  summarise(Death_Count = n()) %>%
+  summarise(Average_Deaths = mean(Death_Count))
+
+average_deaths
+```
+
+After finding the amount of times an Avenger died, then averaging it with all of the Avengers, we found that each Avenger died an average of 1.39 times.
+
+
 ``` r
 library(dplyr)
 
