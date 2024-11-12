@@ -1,0 +1,197 @@
+---
+output: github_document
+  html_document:lab3
+    df_print: paged
+---
+
+<!-- README.md is generated from README.Rmd. Please edit the README.Rmd file -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Lab report #3 - instructions
+
+Follow the instructions posted at <https://ds202-at-isu.github.io/labs.html> for the lab assignment. The work is meant to be finished during the lab time, but you have time until Monday evening to polish things.
+
+Include your answers in this document (Rmd file). Make sure that it knits properly (into the md file). Upload both the Rmd and the md file to your repository.
+
+All submissions to the github repo will be automatically uploaded for grading once the due date is passed. Submit a link to your repository on Canvas (only one submission per team) to signal to the instructors that you are done with your submission.
+
+# Lab 3: Avenger's Peril
+
+## As a team
+
+Extract from the data below two data sets in long form `deaths` and `returns`
+
+```{r}
+
+av <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/avengers/avengers.csv", stringsAsFactors = FALSE)
+head(av)
+
+```
+
+Get the data into a format where the five columns for Death[1-5] are replaced by two columns: Time, and Death. Time should be a number between 1 and 5 (look into the function `parse_number`); Death is a categorical variables with values "yes", "no" and "". Call the resulting data set `deaths`.
+
+Similarly, deal with the returns of characters.
+
+Based on these datasets calculate the average number of deaths an Avenger suffers.
+### Thien Nguyen Tam Statement:
+> average number of deaths per Avenger is approximately 0.55
+
+```{R}
+
+
+library(tidyverse)
+
+glimpse(av)
+
+print(names(av))
+
+deaths <- av %>%
+  pivot_longer(
+    cols = starts_with("Death"),
+    names_to = "Death_Time",
+    values_to = "Death_Status"
+  ) %>%
+  mutate(
+    Death_Time = parse_number(Death_Time),
+    Death = case_when(
+      Death_Status == "YES" ~ "yes",
+      Death_Status == "NO"  ~ "no",
+      TRUE                  ~ NA_character_  
+    )
+  ) %>%
+  select(Name.Alias, Death_Time, Death)
+
+
+print("Preview of Deaths Data:")
+head(deaths)
+
+
+returns <- av %>%
+  pivot_longer(
+    cols = starts_with("Return"),
+    names_to = "Return_Time",
+    values_to = "Return_Status"
+  ) %>%
+  mutate(
+    Return_Time = parse_number(Return_Time),
+    Return = case_when(
+      Return_Status == "YES" ~ "yes",
+      Return_Status == "NO"  ~ "no",
+      TRUE                   ~ NA_character_  
+    )
+  ) %>%
+  select(Name.Alias, Return_Time, Return)
+
+
+print("Preview of Returns Data:")
+head(returns)
+
+
+
+death_time_range <- deaths %>%
+  summarise(min_time = min(Death_Time, na.rm = TRUE),
+            max_time = max(Death_Time, na.rm = TRUE))
+
+
+deaths_complete <- deaths %>%
+  complete(Name.Alias, Death_Time = seq(death_time_range$min_time, death_time_range$max_time)) %>%
+  mutate(
+    Death = replace_na(Death, "no") 
+  )
+
+
+print("Completed Deaths Data:")
+head(deaths_complete)
+
+average_deaths <- deaths_complete %>%
+  mutate(Death_Binary = if_else(Death == "yes", 1, 0)) %>%
+  group_by(Name.Alias) %>%
+  summarise(Total_Deaths = sum(Death_Binary, na.rm = TRUE)) %>%
+  ungroup() %>%
+  summarise(Average_Deaths = mean(Total_Deaths, na.rm = TRUE))
+
+print("Average Number of Deaths:")
+print(average_deaths)
+
+
+
+```
+
+For each team member, copy this part of the report.
+
+Each team member picks one of the statements in the FiveThirtyEight [analysis](https://fivethirtyeight.com/features/avengers-death-comics-age-of-ultron/) and fact checks it based on the data. Use dplyr functionality whenever possible.
+
+### FiveThirtyEight Statement
+
+> Quote the statement you are planning to fact-check.
+
+### Thien Nguyen Tam Statement:
+
+>Avengers suffer a total of 89 deaths and experience 57 comebacks throughout their history.
+
+```{R}
+library(tidyverse)
+
+# Calculate total deaths
+total_deaths <- deaths %>%
+  filter(Death == "yes") %>%
+  tally() %>%
+  pull(n)
+
+# Calculate total comebacks
+total_comebacks <- returns %>%
+  filter(Return == "yes") %>%
+  tally() %>%
+  pull(n)
+
+# Display the results
+total_deaths
+total_comebacks
+
+```
+
+Here, the total deaths confirms that there were indeed 89 total deaths and 57 comebacks. This was done by filtering out deaths = "yes" and return = "yes".
+
+### FiveThirtyEight Statement
+
+> Quote the statement you are planning to fact-check.
+
+### Thien Nguyen Tam Statement:
+
+>The analysis confirms that Iron Man is the Avenger with the most recorded deaths, accumulating a total of 7 deaths
+
+
+```{r}
+
+library(tidyverse)
+
+# Calculate total deaths per Avenger
+death_counts <- deaths_complete %>%
+  filter(Death == "yes") %>%
+  group_by(Name.Alias) %>%
+  summarise(Total_Deaths = n()) %>%
+  arrange(desc(Total_Deaths))
+
+# Identify the Avenger with the most deaths
+top_death_avenger <- death_counts %>%
+  slice(1)
+
+print(top_death_avenger)
+```
+
+### Answer
+
+The data analysis reveals that Iron Man has the highest number of recorded deaths among the Avengers, with a total of 7 deaths.
+
+### Include the code
+
+Make sure to include the code to derive the (numeric) fact for the statement
+
+### Include your answer
+
+Include at least one sentence discussing the result of your fact-checking endeavor.
+
+Upload your changes to the repository. Discuss and refine answers as a team.
